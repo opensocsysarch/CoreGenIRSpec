@@ -1,0 +1,93 @@
+#
+# nodemap.dot
+#
+# Copyright (C) 2017-2018 Tactical Computing Laboratories, LLC
+# All Rights Reserved
+# contact@tactcomplabs.com
+#
+# CoreGen can not be copied and/or distributed without the
+# express permission of Tactical Computing Laboratories, LLC
+#
+
+digraph G {
+  label="CoreGen IR Node Mapping";
+
+  node [style=filled,color=lightgrey,shape=ellipse];
+
+  SoCNode;
+  SoCNode [label="SoC" shape=ellipse style=filled color=lightgrey];
+  CoreNode;
+  CoreNode [label="Core" shape=ellipse style=filled color=lightgrey];
+  ExtNode;
+  ExtNode [label="Extension" shape=hexagon style=filled color=lightgrey];
+  PluginNode;
+  PluginNode [label="Plugin" shape=octagon style=filled color=lightgrey];
+  CacheNode;
+  CacheNode [label="Cache" shape=ellipse style=filled color=lightgrey];
+  PInstNode;
+  PInstNode [label="Pseudo Instruction" shape=ellipse style=filled color=lightgrey];
+  InstNode;
+  InstNode [label="Instruction" shape=ellipse style=filled color=lightgrey];
+  InstFormatNode;
+  InstFormatNode [label="Instruction Format" shape=ellipse style=filled color=lightgrey];
+  ISANode;
+  ISANode [label="ISA" shape=ellipse style=filled color=lightgrey];
+  RegClassNode;
+  RegClassNode [label="Register Class" shape=ellipse style=filled color=lightgrey];
+  RegNode;
+  RegNode [label="Register" shape=ellipse style=filled color=lightgrey];
+  SpadNode;
+  SpadNode [label="Scratchpad" shape=ellipse style=filled color=lightgrey];
+  MCtrlNode;
+  MCtrlNode [label="Memory Controller" shape=ellipse style=filled color=lightgrey];
+  VTPNode;
+  VTPNode [label="Virtual to Physical" shape=ellipse style=filled color=lightgrey];
+  CommNode;
+  CommNode [label="Communication Channel" shape=ellipse style=filled color=lightgrey];
+
+  #CoreRefNode;
+  #CoreRefNode [label="Core" shape=box style=filled color=lightgrey];
+  #ExtRefNode;
+  #ExtRefNode [label="Extension" shape=box style=filled color=lightgrey];
+  #CacheRefNode;
+  #CacheRefNode [label="Cache" shape=box style=filled color=lightgrey];
+  #PInstRefNode;
+  #PInstRefNode [label="Pseudo Instruction" shape=box style=filled color=lightgrey];
+  #InstRefNode;
+  #InstRefNode [label="Instruction" shape=box style=filled color=lightgrey];
+  #InstFormatRefNode;
+  #InstFormatRefNode [label="Instruction Format" shape=box style=filled color=lightgrey];
+  #ISARefNode;
+  #ISARefNode [label="ISA" shape=box style=filled color=lightgrey];
+  #RegClassRefNode;
+  #RegClassRefNode [label="Register Class" shape=box style=filled color=lightgrey];
+  #RegRefNode;
+  #RegRefNode [label="Register" shape=box style=filled color=lightgrey];
+
+  #CoreRefNode -> ExtNode;
+  #ExtRefNode -> ExtNode;
+  #CacheRefNode -> ExtNode;
+  #PInstRefNode -> ExtNode;
+  #InstRefNode -> ExtNode;
+  #InstFormatRefNode -> ExtNode;
+  #ISARefNode -> ExtNode;
+  #RegClassRefNode -> ExtNode;
+  #RegRefNode -> ExtNode;
+
+  CoreNode -> SoCNode;
+  RegNode -> RegClassNode;
+  SpadNode -> CoreNode;
+  ISANode -> CoreNode;
+  MCtrlNode -> VTPNode;
+  CommNode -> CoreNode;
+  VTPNode -> CommNode;
+  CacheNode -> CacheNode;
+  CacheNode -> CoreNode;
+  RegClassNode -> CoreNode;
+  InstFormatNode -> ISANode;
+  InstNode -> ISANode;
+  PInstNode -> InstNode;
+  PInstNode -> ISANode;
+  ExtNode -> CoreNode;
+  PluginNode -> SoCNode;
+}
