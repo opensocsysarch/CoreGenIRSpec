@@ -33,6 +33,7 @@
 \usepackage{dirtree}
 \usepackage{multirow}
 \usepackage{draftwatermark} % required for watermarks
+\usepackage{vhistory}
 \RequirePackage{epstopdf}
 \RequirePackage{tabularx}
 \RequirePackage{xstring}
@@ -77,10 +78,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.0}}  % -- classification
+\chead{\textbf{CoreGen IR Spec v.1.1}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.0}}  % -- classification
+\cfoot{\textbf{CoreGen IR Spec v.1.1}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -108,8 +109,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & September 12, 2018 \\ % Date the experiment was performed
-Revision: & 1.0 \\         % revision number
+Date: & November 21, 2018 \\ % Date the experiment was performed
+Revision: & 1.1 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -129,7 +130,7 @@ Authors: & Tactical Computing Labs\\ % Author names
 \clearpage
 
 %----------------------------------------------------------------------------------------
-%       List of Figures
+%       List of Document Elements
 %----------------------------------------------------------------------------------------
 
 \clearpage
@@ -137,6 +138,18 @@ Authors: & Tactical Computing Labs\\ % Author names
 \lstlistoflistings
 \listoftables
 %\listofalgorithms
+\clearpage
+
+%----------------------------------------------------------------------------------------
+%       Changelog
+%----------------------------------------------------------------------------------------
+
+\clearpage
+\begin{versionhistory}
+  \vhEntry{1.0}{09.12.2018}{JLeidel}{Initial public release}
+  \vhEntry{1.1}{11.21.2018}{JLeidel}{Adding ThreadUnits to Core nodes and TUSReg register attributes}
+\end{versionhistory}
+
 \clearpage
 
 %----------------------------------------------------------------------------------------
@@ -529,6 +542,9 @@ to as a \texttt{PseudoName}.  Additional parameters are described in Table~\ref{
 \multirow{2}{*}{\texttt{AMSReg}} & Sets a parameter indicating that the register is an arithmetic machine state register.\\
                                                           & The hardware code generator will integrate these into the pipeline. (Bool)\\
 \hline
+\multirow{2}{*}{\texttt{TUSReg}} & Sets a parameter indicating that the register is shared across all thread units within the core.\\
+                                                          & Either \texttt{Shared} or \texttt{TUSReg} can be set, but not both. (Bool)\\
+\hline
 \multirow{2}{*}{\texttt{Shared}} & Sets a parameter indicating that the register is a shared register.\\
                                                           & The hardware generator will create \textbf{ONE} instance of the register for all cores. (Bool)\\
 \hline
@@ -550,6 +566,7 @@ Registers:
     ROReg: @Bool@
     CSRReg: @Bool@
     AMSReg: @Bool@
+    TUSReg: @Bool@
     Shared: @Bool@
   - RegName: @String@
     Width: @Integer@
@@ -561,6 +578,7 @@ Registers:
     ROReg: @Bool@
     CSRReg: @Bool@
     AMSReg: @Bool@
+    TUSReg: @Bool@
     Shared: @Bool@
    ...more registers
 \end{lstlisting}  
@@ -955,13 +973,25 @@ performance of the core will be very poor.
 
 In addition to the aforementioned base nodes, cores can be augmented with one or more extensions.  These extensions 
 may include additional, registers, register classes or other non-standard nodes beyond what is defined in the base 
-core infrastructure.  We see an example of a basic and extended core node in Listing~\ref{lis:core}.   
+core infrastructure.
+
+Core nodes may also define the degree of symmetric multithreading (SMT) by specifying the number of \texttt{ThreadUnits}.  
+This optional keyword permits users to specify the number of unique thread units for the respective core.  The hardware 
+code generator will output unique register files for each thread unit unless a register has been designated as 
+\textit{thread unit shared} (\texttt{TUSReg}) or \texttt{Shared}.  See Section~\ref{sec:RegisterNodes} for descriptions 
+of these register attributes.    
+The code generator will not, however, output unique \texttt{Extensions} for each thread unit.  
+A single instance of a shared register will be generated and shared across the cores.  If not specified, the number of 
+\texttt{ThreadUnits} is assumed to be \textit{1}.  
+
+We see an example of a basic and extended core node in Listing~\ref{lis:core}.   
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Core Node Definition},captionpos=b,label={lis:core}]
 - Core: @String@
     Cache: @String@
     ISA: @String@
+    ThreadUnits: @2@
     RegisterClasses:
       - RegClass: @String@
       - RegClass: @String@
