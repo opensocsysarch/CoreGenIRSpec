@@ -78,10 +78,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.1}}  % -- classification
+\chead{\textbf{CoreGen IR Spec v.1.2}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.1}}  % -- classification
+\cfoot{\textbf{CoreGen IR Spec v.1.2}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@
 \begin{center}
 \begin{tabular}{l r}
 Date: & November 21, 2018 \\ % Date the experiment was performed
-Revision: & 1.1 \\         % revision number
+Revision: & 1.2 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -148,6 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
 \begin{versionhistory}
   \vhEntry{1.0}{09.12.2018}{JLeidel}{Initial public release}
   \vhEntry{1.1}{11.21.2018}{JLeidel}{Adding ThreadUnits to Core nodes and TUSReg register attributes}
+  \vhEntry{1.2}{11.21.2018}{JLeidel}{Adding subregister pseduoregister sub-node structure for setting up register aliases to specific bit regions of parent registers}
 \end{versionhistory}
 
 \clearpage
@@ -508,7 +509,12 @@ ProjectInfo:
 \label{sec:RegisterNodes}
 
 Register nodes define a single instance of a register in hardware.  Registers may also have named aliases, referred 
-to as a \texttt{PseudoName}.  Additional parameters are described in Table~\ref{tab:RegNodeParams}.  We provide a sample register IR block in Listing~\ref{lis:registernode}.  
+to as a \texttt{PseudoName}.  Further, subregisters (\texttt{SubRegs}) can be defined whereby a unique pseudoname 
+is utilized to access a specific portion of the parent register.  For example, if we define a parent register \textit{FOO} 
+with a width of 64 bits, we may also define a \texttt{SubReg} \textit{FOO.BAR} to alias bits \texttt{[31-0]} (the lower 
+half of the register).  
+
+Additional parameters are described in Table~\ref{tab:RegNodeParams}.  We provide a sample register IR block in Listing~\ref{lis:registernode}.  
 
 \begin{table}[h]
 \begin{center}
@@ -548,6 +554,17 @@ to as a \texttt{PseudoName}.  Additional parameters are described in Table~\ref{
 \multirow{2}{*}{\texttt{Shared}} & Sets a parameter indicating that the register is a shared register.\\
                                                           & The hardware generator will create \textbf{ONE} instance of the register for all cores. (Bool)\\
 \hline
+\multirow{2}{*}{\textbf{SubRegs}} & \\ & \\
+\hline
+\multirow{2}{*}{\texttt{SubReg}} & Sets the unique subregister name.\\
+                                                          & The name must be unique across all registers within the register class (String)\\
+\hline
+\multirow{2}{*}{\texttt{StartBit}} & Sets the starting bit position of the subregister in the parent register.\\
+                                                          & The start bit must be less than the end bit and a minimum of one bit. (Int)\\
+\hline
+\multirow{2}{*}{\texttt{EndBit}} & Sets the ending bit position of the subregister in the parent register.\\
+                                                          & The end bit must be greater than the start bit and a minimum of one bit (Int)\\
+\hline
 \end{tabular}
 \end{center}
 \end{table}  
@@ -568,6 +585,13 @@ Registers:
     AMSReg: @Bool@
     TUSReg: @Bool@
     Shared: @Bool@
+    SubRegs:
+      - SubReg: @String@
+        StartBit: @Integer@
+        EndBit: @Integer@
+      - SubReg: @String@
+        StartBit: @Integer@
+        EndBit: @Integer@
   - RegName: @String@
     Width: @Integer@
     Index: @Integer@
