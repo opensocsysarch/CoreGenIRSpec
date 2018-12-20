@@ -78,10 +78,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.2}}  % -- classification
+\chead{\textbf{CoreGen IR Spec v.1.3}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.2}}  % -- classification
+\cfoot{\textbf{CoreGen IR Spec v.1.3}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -109,8 +109,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & November 21, 2018 \\ % Date the experiment was performed
-Revision: & 1.2 \\         % revision number
+Date: & December 20, 2018 \\ % Date the experiment was performed
+Revision: & 1.3 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -149,6 +149,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.0}{09.12.2018}{JLeidel}{Initial public release}
   \vhEntry{1.1}{11.21.2018}{JLeidel}{Adding ThreadUnits to Core nodes and TUSReg register attributes}
   \vhEntry{1.2}{11.21.2018}{JLeidel}{Adding subregister pseduoregister sub-node structure for setting up register aliases to specific bit regions of parent registers}
+  \vhEntry{1.3}{12.20.2018}{JLeidel}{Adding clarifying text to indicate the permissible characters utilized in IR node names}
 \end{versionhistory}
 
 \clearpage
@@ -409,6 +410,63 @@ scalar values in one of the following types (Table~\ref{tab:scalartypes}):
 \end{tabular}
 \end{center}
 \end{table}  
+
+\subsection{Node Names and Linkage}
+\label{sec:NameNamesAndLinkage}
+
+Each IR node in the CoreGen IR format has a unique name that represents a unique hardware object.  Names must be 
+unique across all IR nodes.  We require unique names as the respective node names are utilized to link nodes in a 
+dependent manner across the design.  For example, a \texttt{core} node may have a dependent \texttt{cache} node.  We provide 
+an example node dependency using these names in Listing~\ref{lis:nodenames}.  Notice how we define an instruction node (\texttt{TEST54.inst0}) 
+and a pseudo instruction node (\texttt{TEST54.pinst0}) that depends upon the core instruction by name.
+
+Given this use of textual names in the IR, we must define a valid naming convention that is preserved in the IR.  The valid node 
+name rules are listed as follows: 
+
+\begin{itemize}
+\item Names must be non null (\textit{length greater than 0})
+\item Names must begin with an alpha character (\textit{[a-z,A-Z]})
+\item Names must contain only alphanumeric characters and periods (\textit{[a-z,A-Z,0-9,.]})
+\item Names are case sensitive, but can include any combination of upper and lower case characters
+\end{itemize}
+
+Example valid and invalid node names are listed in Table~\ref{tab:validinvalidnames}.  
+
+\begin{table}[h]
+\begin{center}
+\caption{CoreGen IR Valid and Invalid Node Names}
+\vspace{0.125in}
+\label{tab:validinvalidnames}
+\begin{tabular}{|c|c|l}
+\hline
+\textbf{Valid} & \textbf{Invalid}\\
+\hline
+nodename, NodeName, nodeName0, Node.Name.9 & 9Name, Node\&Name, \%NodeName\\
+\hline
+\end{tabular}
+\end{center}
+\end{table} 
+
+\clearpage
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,showstringspaces=false,caption={Node Naming and Linkage},captionpos=b,label={lis:nodenames}]
+Insts:
+  - Inst: @TEST54.inst0@
+    ISA: TEST54.isa
+    InstFormat: TEST54.if
+    Encodings:
+      - EncodingField: opcode
+        EncodingWidth: 8
+        EncodingValue: 1
+PseudoInsts:
+  - PseudoInst: TEST54.pinst0
+    ISA: TEST54.isa
+    Inst: @TEST54.inst0@
+    Encodings:
+      - EncodingField: RA
+        EncodingWidth: 8
+        EncodingValue: 0
+\end{lstlisting}  
 
 \subsection{User Defined RTL}
 \label{sec:UserDefinedRTL}

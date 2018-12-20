@@ -1,8 +1,9 @@
 \select@language {english}
 \contentsline {table}{\numberline {2}{\ignorespaces CoreGen IR Scalar Types}}{11}{table.2}
-\contentsline {table}{\numberline {3}{\ignorespaces CoreGen Project Types}}{13}{table.3}
-\contentsline {table}{\numberline {4}{\ignorespaces CoreGen Register Node Parameters}}{14}{table.4}
-\contentsline {table}{\numberline {5}{\ignorespaces CoreGen Instruction Format Node Parameters}}{18}{table.5}
-\contentsline {table}{\numberline {6}{\ignorespaces CoreGen Instruction Format Node Parameters}}{26}{table.6}
-\contentsline {table}{\numberline {7}{\ignorespaces CoreGen Plugin Node Parameters}}{31}{table.7}
-\contentsline {table}{\numberline {8}{\ignorespaces CoreGen Plugin Node Feature Types}}{32}{table.8}
+\contentsline {table}{\numberline {3}{\ignorespaces CoreGen IR Valid and Invalid Node Names}}{11}{table.3}
+\contentsline {table}{\numberline {4}{\ignorespaces CoreGen Project Types}}{14}{table.4}
+\contentsline {table}{\numberline {5}{\ignorespaces CoreGen Register Node Parameters}}{15}{table.5}
+\contentsline {table}{\numberline {6}{\ignorespaces CoreGen Instruction Format Node Parameters}}{19}{table.6}
+\contentsline {table}{\numberline {7}{\ignorespaces CoreGen Instruction Format Node Parameters}}{27}{table.7}
+\contentsline {table}{\numberline {8}{\ignorespaces CoreGen Plugin Node Parameters}}{32}{table.8}
+\contentsline {table}{\numberline {9}{\ignorespaces CoreGen Plugin Node Feature Types}}{33}{table.9}
