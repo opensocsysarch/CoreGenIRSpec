@@ -478,7 +478,9 @@ users have the ability to define inline RTL.  This RTL can currently be written 
 Chisel (Chisel 3) or Verilog.  Inline RTL must follow the naming conventions and port 
 definitions supported by the CoreGen code generation facilities (NEED REFERENCE).  
 An example of defining inline RTL for a single instruction in Chisel3 is shown in Listing~\ref{lis:inlinertl}.  
-Notice how the inline RTL source code is quoted.  
+Notice how the inline RTL source code is quoted.  For each inline RTL sample provided with the 
+CoreGen node, you must also specify the \texttt{RTLType}.  Types can be one of \texttt{Chisel}, 
+\texttt{Verilog} and \texttt{Unknown}.    
 
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,showstringspaces=false,caption={Sample Inline RTL},captionpos=b,label={lis:inlinertl}]
@@ -495,6 +497,7 @@ Insts:
           } .otherwise {
             RT = RA >> RB
           }"@
+     @RTLType: Chisel@
 \end{lstlisting}  
 
 The second path by which users may override a default node using RTL is by utilizing an external 
@@ -515,6 +518,7 @@ Insts:
         EncodingWidth: 8
         EncodingValue: 1
     @RTLFile: Sample.v@
+    @RTLType: Verilog@
 \end{lstlisting}
 
 \clearpage
@@ -827,6 +831,11 @@ as immediate values, setting this width to something less than the full field wi
 to what is specified.  For example, if the instruction encoding field for the immediate is 16 bits, but you define an instruction 
 with a 12 bit immediate, the value in the immediate field of that instruction will be truncated to 12 bits.
 
+Finally, instructions have the ability to include inline StoneCutter definitions for each instruction (NEED REFERENCE).  These 
+inline StoneCutter instruction definitions are compiled consolidated into larger StoneCutter source files using the CoreGen 
+infrastructure and subsequently compiled into Chisel HDL.  Inline StoneCutter language is designated using \texttt{Impl} 
+attributes within an individual instruction definition.   
+
 We provide an example instruction node in Listing~\ref{lis:inst}.     
 
 \vspace{0.125in}
@@ -846,6 +855,7 @@ Insts:
       - EncodingField: @String@
         EncodingWidth: @Integer@
         EncodingValue: @Integer@
+    Impl: @String@
 \end{lstlisting}
 
 \clearpage
