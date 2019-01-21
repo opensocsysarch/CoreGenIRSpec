@@ -150,6 +150,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.1}{11.21.2018}{JLeidel}{Adding ThreadUnits to Core nodes and TUSReg register attributes}
   \vhEntry{1.2}{11.21.2018}{JLeidel}{Adding subregister pseduoregister sub-node structure for setting up register aliases to specific bit regions of parent registers}
   \vhEntry{1.3}{12.20.2018}{JLeidel}{Adding clarifying text to indicate the permissible characters utilized in IR node names}
+  \vhEntry{1.4}{01.21.2019}{JLeidel}{Adding RTL Type fields for overloaded RTL models; Adding Syntax mnemonic fields for instructions}
 \end{versionhistory}
 
 \clearpage
@@ -831,19 +832,35 @@ as immediate values, setting this width to something less than the full field wi
 to what is specified.  For example, if the instruction encoding field for the immediate is 16 bits, but you define an instruction 
 with a 12 bit immediate, the value in the immediate field of that instruction will be truncated to 12 bits.
 
+Each instruction nodes can also drive the syntax by which the compiler's assembly code is generated and parsed.  The 
+\texttt{Syntax} field contains a string value in a specific format that defines the instruction mnemonics and associated 
+syntax that is utilized to construct the associated assembler and disassembler.  This syntax is constructed in a specific 
+manner such that the CoreGen infrastructure has the ability to match the respective mnemonic to the correct instruction 
+format field.  The syntax must include the instruction name (which may differ from the instruction node name) and some 
+number arguments.  The argument names must match the respective register class or immediate field names 
+of the respective instruction format.  Register class arguments are delineated with \textit{\%} characters and immediate 
+arguments are delineated with \textit{\$} characters.  User may also intersperse commas and parenthesis throughout the syntax at will.
+
+For example, consider an instruction \texttt{ADD} whose instruction format has three register class fields: \texttt{RT}, \texttt{RA} and 
+\texttt{RB}.  We may specify the instruction syntax as follows: \texttt{ADD \%RT, \%RA, \%RB}.  We may also have an additional 
+instruction, \texttt{LOAD}, whose instruction format contains two register class fields (\texttt{RT}, \texttt{RA}) and a single immediate 
+field (\texttt{IMM}).  Our instruction syntax may then be formatted as: \texttt{LOAD \%RT, \$IMM(\%RA)}.  Note the use of the preceding 
+characters for the register class and immediate field designators.    
+
 Finally, instructions have the ability to include inline StoneCutter definitions for each instruction (NEED REFERENCE).  These 
 inline StoneCutter instruction definitions are compiled consolidated into larger StoneCutter source files using the CoreGen 
 infrastructure and subsequently compiled into Chisel HDL.  Inline StoneCutter language is designated using \texttt{Impl} 
 attributes within an individual instruction definition.   
 
 We provide an example instruction node in Listing~\ref{lis:inst}.     
-
+\clearpage
 \vspace{0.125in}
 \begin{lstlisting}[frame=single,style=base,caption={Instruction Node Definition},captionpos=b,label={lis:inst}]
 Insts:
   - Inst: @String@
     ISA: @String@
     InstFormat: @String@
+    Syntax: @String@
     Encodings:
       - EncodingField: @String@
         EncodingWidth: @Integer@
@@ -851,6 +868,7 @@ Insts:
   - Inst: @String@
     ISA: @String@
     InstFormat: @String@
+    Syntax: @String@
     Encodings:
       - EncodingField: @String@
         EncodingWidth: @Integer@
