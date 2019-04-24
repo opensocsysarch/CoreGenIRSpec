@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4}}  % -- classification
+\chead{\textbf{CoreGen IR Spec v.1.4.1}}  % -- classification
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4}}  % -- classification
+\cfoot{\textbf{CoreGen IR Spec v.1.4.1}}  % -- classification
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & January 21, 2019 \\ % Date the experiment was performed
-Revision: & 1.4 \\         % revision number
+Date: & April 24, 2019 \\ % Date the experiment was performed
+Revision: & 1.4.1 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -148,6 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.2}{11.21.2018}{JLeidel}{Adding subregister pseduoregister sub-node structure for setting up register aliases to specific bit regions of parent registers}
   \vhEntry{1.3}{12.20.2018}{JLeidel}{Adding clarifying text to indicate the permissible characters utilized in IR node names}
   \vhEntry{1.4}{01.21.2019}{JLeidel}{Adding RTL Type fields for overloaded RTL models; Adding Syntax mnemonic fields for instructions}
+  \vhEntry{1.4.1}{04.24.2019}{JLeidel}{Adding PC attribute to register node attributes}
 \end{versionhistory}
 
 \clearpage
@@ -611,6 +612,9 @@ Additional parameters are described in Table~\ref{tab:RegNodeParams}.  We provid
 \multirow{2}{*}{\texttt{TUSReg}} & Sets a parameter indicating that the register is shared across all thread units within the core.\\
                                                           & Either \texttt{Shared} or \texttt{TUSReg} can be set, but not both. (Bool)\\
 \hline
+\multirow{2}{*}{\texttt{PCReg}} & Sets a parameter indicating that the register is designated as a program counter.\\
+                                                          & This attribute may only exist in a single register per instruction set.  (Bool)\\
+\hline
 \multirow{2}{*}{\texttt{Shared}} & Sets a parameter indicating that the register is a shared register.\\
                                                           & The hardware generator will create \textbf{ONE} instance of the register for all cores. (Bool)\\
 \hline
@@ -644,6 +648,7 @@ Registers:
     CSRReg: @Bool@
     AMSReg: @Bool@
     TUSReg: @Bool@
+    PCReg: @Bool@
     Shared: @Bool@
     SubRegs:
       - SubReg: @String@
