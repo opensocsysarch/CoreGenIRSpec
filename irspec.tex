@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4.1}}  % -- classification
+\chead{\textbf{CoreGen IR Spec v.1.4.2}}
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4.1}}  % -- classification
+\cfoot{\textbf{CoreGen IR Spec v.1.4.2}}
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,17 +106,12 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & April 24, 2019 \\ % Date the experiment was performed
-Revision: & 1.4.1 \\         % revision number
+Date: & July 03, 2019 \\ % Date the experiment was performed
+Revision: & 1.4.2 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
 \end{center}
-
-% If you wish to include an abstract, uncomment the lines below
-% \begin{abstract}
-% Abstract text
-% \end{abstract}
 
 %----------------------------------------------------------------------------------------
 %       TOC
@@ -149,6 +144,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.3}{12.20.2018}{JLeidel}{Adding clarifying text to indicate the permissible characters utilized in IR node names}
   \vhEntry{1.4}{01.21.2019}{JLeidel}{Adding RTL Type fields for overloaded RTL models; Adding Syntax mnemonic fields for instructions}
   \vhEntry{1.4.1}{04.24.2019}{JLeidel}{Adding PC attribute to register node attributes}
+  \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
 \end{versionhistory}
 
 \clearpage
@@ -519,6 +515,46 @@ Insts:
     @RTLFile: Sample.v@
     @RTLType: Verilog@
 \end{lstlisting}
+
+\clearpage
+\subsection{Node Override}
+\label{sec:NodeOverride}
+
+In addition to providing the ability to override each node with user-defined RTL, the CoreGen IR infrastructure 
+also provides the ability to override an entire node's construction with user-defined logic.  This mechanism is analogous 
+to utilizing templates in modern object-oriented programming models.  Users have the ability to utilize \textit{plugins} to override 
+the default behavior and/or define non-standard features for a target IR node.  This feature can also be utilized to integrate pre-existing 
+hardware IP into new designs.  This functionality 
+can be performed on all nodes except plugins, extensions, encoding and pseudo instructions.  
+
+An example of utilizing this feature is provided in Listing~\ref{lis:nodeoverride}.  The first step in this process is to define a plugin node 
+that will be utilized to override the default functionality of a standard node.  In this case, we utilize a pre-existing \texttt{CacheLayerPlugin} 
+and define a \texttt{CachePlugin} node.  This theoretical plugin node instantiates an \textit{N}-level cache with pre-existing IP where the number 
+of cache levels is defined by a custom feature (\texttt{Levels}).  With this plugin node defined, we can now define a base cache node defined 
+as the \texttt{L0.Cache}.  Within this cache node, we use the \texttt{Override} keyword and attach the plugin node definition that we previously 
+defined (\texttt{CachePlugin}).  Note that you \textbf{must} utilize the plugin node name (\texttt{Plugin}), not the actual name of the plugin 
+implementation (\texttt{PluginName}).  The CoreGen IR supports multiple instantiations of the same plugin implementation under different names.  
+This permits users to re-use existing IP and define unique features for each instance of the plugin.  
+For more information regarding the definition and construction of the actual \texttt{Plugin} nodes, see Section~\ref{sec:PluginNodes}.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,showstringspaces=false,caption={Sample Node Override},captionpos=b,label={lis:nodeoverride}]
+Plugins:
+  - Plugin: @CachePlugin@
+    PluginName: CacheLayerPlugin
+    MajorVersion: 1
+    MinorVersion: 0
+    PatchVersion: 0
+    Features:
+    - FeatureName: Levels
+      FeatureType: unsigned
+      FeatureValue: 3
+Caches:
+  - Cache: L0.Cache
+    Sets: 1024
+    Ways: 8
+    Override: @CachePlugin@
+\end{lstlisting}  
 
 \clearpage
 \subsection{Projects}
