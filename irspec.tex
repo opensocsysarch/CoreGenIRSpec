@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4.2}}
+\chead{\textbf{CoreGen IR Spec v.1.4.3}}
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4.2}}
+\cfoot{\textbf{CoreGen IR Spec v.1.4.3}}
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & July 03, 2019 \\ % Date the experiment was performed
-Revision: & 1.4.2 \\         % revision number
+Date: & August 21, 2019 \\ % Date the experiment was performed
+Revision: & 1.4.3 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -145,6 +145,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4}{01.21.2019}{JLeidel}{Adding RTL Type fields for overloaded RTL models; Adding Syntax mnemonic fields for instructions}
   \vhEntry{1.4.1}{04.24.2019}{JLeidel}{Adding PC attribute to register node attributes}
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
+  \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
 \end{versionhistory}
 
 \clearpage
@@ -933,7 +934,9 @@ mov r10, r11      # Pseudo instruction for 'add r10, r11, r0'
 Pseudo instructions require a unique name, the associated ISA and the target instruction that you seek to alias.  
 You must also define a set of encoding parameters that are utilized to incorporate specific encodings for specific fields.  
 For example, if you seek to define a pseudo instruction whereby an individual register file is always set to the same 
-register index, utilize a pseudo instruction with an encoding field.  An example set of pseudo instructions is provided 
+register index, utilize a pseudo instruction with an encoding field.  Further, much like the original instruction definition, pseudo 
+instructions permit the user to define assembly mnemonics that are echoed in the compiler implementation.  The assembly 
+mnemonics follow the syntax rules defined in Section~\ref{sec:InstructionNodes}.  An example set of pseudo instructions is provided 
 in Listing~\ref{lis:pseudoinst}.  
 
 \vspace{0.125in}
@@ -946,6 +949,7 @@ PseudoInsts:
       - EncodingField: @String@
         EncodingWidth: @Integer@
         EncodingValue: @Integer@
+    Syntax: @String@
   - PseudoInst: @String@
     ISA: @String@
     Inst: @String@
@@ -953,6 +957,7 @@ PseudoInsts:
       - EncodingField: @String@
         EncodingWidth: @Integer@
         EncodingValue: @Integer@
+    Syntax: @String@
 \end{lstlisting}
 
 \clearpage
