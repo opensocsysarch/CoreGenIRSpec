@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4.3}}
+\chead{\textbf{CoreGen IR Spec v.1.4.4}}
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4.3}}
+\cfoot{\textbf{CoreGen IR Spec v.1.4.4}}
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & August 21, 2019 \\ % Date the experiment was performed
-Revision: & 1.4.3 \\         % revision number
+Date: & August 27, 2019 \\ % Date the experiment was performed
+Revision: & 1.4.4 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -146,6 +146,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.1}{04.24.2019}{JLeidel}{Adding PC attribute to register node attributes}
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
+  \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
 \end{versionhistory}
 
 \clearpage
@@ -517,6 +518,7 @@ Insts:
     @RTLType: Verilog@
 \end{lstlisting}
 
+
 \clearpage
 \subsection{Node Override}
 \label{sec:NodeOverride}
@@ -556,6 +558,31 @@ Caches:
     Ways: 8
     Override: @CachePlugin@
 \end{lstlisting}  
+
+\clearpage
+\subsection{Node Notes}
+\label{sec:NodeNotes}
+
+Each node has an additional attribute that permits users to add specific \textit{notes} or comments 
+for future reference.  These \texttt{Notes} fields do not affect the overall functionality, stability 
+or connectivity of the constituent design.  Rather, these attributes may be utilized, queried or 
+processed by downstream tools.  For example, the CoreGen \textit{SpecDoc} pass utilizes these notes
+to output specific information for constituent design elements.  An example of doing so is shown 
+in Listing~\ref{lis:notes}.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Sample Node Notes},captionpos=b,label={lis:notes}]
+Insts:
+  - Inst: TEST69.inst0
+    ISA: TEST69.isa
+    InstFormat: TEST69.if
+    Encodings:
+      - EncodingField: opcode
+        EncodingWidth: 8
+        EncodingValue: 1
+    @Notes: This instruction performs carry-less addition.@
+\end{lstlisting}
+
 
 \clearpage
 \subsection{Projects}
