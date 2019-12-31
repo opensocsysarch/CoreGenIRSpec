@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4.4}}
+\chead{\textbf{CoreGen IR Spec v.1.4.5}}
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4.4}}
+\cfoot{\textbf{CoreGen IR Spec v.1.4.5}}
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & August 27, 2019 \\ % Date the experiment was performed
-Revision: & 1.4.4 \\         % revision number
+Date: & December 30, 2019 \\ % Date the experiment was performed
+Revision: & 1.4.5 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -147,6 +147,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
+  \vhEntry{1.4.5}{12.30.2019}{JLeidel}{Adding LineSize cache line size parameter}
 \end{versionhistory}
 
 \clearpage
@@ -995,7 +996,9 @@ Cache nodes represent a single level of a traditional cache hierarchy.  Regardle
 designated as an instruction cache, data cache or otherwise, the cache node is defined in the same manner.  
 The target use is determined by how the cache is connected to the core (or cores).  Cache nodes are required 
 to have at least two parameters: \texttt{Sets} and \texttt{Ways}.  These represent the number of cache sets 
-and the number of \textit{ways} are represented in the cache.
+and the number of \textit{ways} are represented in the cache.  By default, caches are defined to utilize a 
+standard, 64-byte cache line size.  Users may override this by specifying an optional parameter, \texttt{LineSize} 
+with the size of each cache line in bytes.
 
 Caches can also be configured in hierarchies.  Each level in the cache must be defined as a cache node.  To define 
 a cache hierarchy, start with the cache layer closest to the core (usually defined as the \textit{L1} layer) and add a 
@@ -1017,6 +1020,7 @@ Caches:
   - Cache: @String@
     Sets: @Integer@
     Ways: @Integer@
+    LineSize: @Integer@
 \end{lstlisting}
 
 \clearpage
