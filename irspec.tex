@@ -147,7 +147,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
-  \vhEntry{1.4.5}{12.30.2019}{JLeidel}{Adding LineSize cache line size parameter}
+  \vhEntry{1.4.5}{12.30.2019}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters}
 \end{versionhistory}
 
 \clearpage
@@ -1081,7 +1081,15 @@ Memory controller nodes are designed to receive physical addresses from upstream
 subsequently transfer the requests to the external memory devices.  Many designs may warrant overriding these nodes 
 with external RTL IP given design-specific external memory requirements.  Otherwise, memory controller nodes require 
 a unique node name as well as the number of upstream memory ports.  Currently, the number of ports (\texttt{Ports}) should be an even 
-number as these are divided evenly between request ports and response ports.  An example memory controller IR block is 
+number as these are divided evenly between request ports and response ports.  In addition to the number of ports, 
+memory controllers may optionally specify the memory ordering for the respective controller.  The \texttt{MemoryOrder} 
+parameter takes a string argument in one of the following types: \texttt{Weak}, \texttt{TSO} or \texttt{Strong}.  
+The \texttt{Weak} parameter (which is also the default if not specified) instructs the memory controller 
+to function in pure weak ordering for loads and stores.  The \texttt{TSO} parameter instructs the memory 
+controller to function in \textit{total-store-ordering} mode.  Finally, the \texttt{Strong} parameter 
+enforces \textit{strong} memory ordering.
+
+An example memory controller IR block is 
 shown in Listing~\ref{lis:mctrl}.  
 
 \vspace{0.125in}
@@ -1091,6 +1099,7 @@ MemoryControllers:
     Ports: @Integer@
   - MemoryController: @String@
     Ports: @Integer@
+    MemoryOrder: @{Weak,TSO,Strong}@
 \end{lstlisting}
 
 \clearpage
