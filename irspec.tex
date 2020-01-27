@@ -147,7 +147,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
-  \vhEntry{1.4.5}{12.30.2019}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters}
+  \vhEntry{1.4.5}{12.30.2019}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes}
 \end{versionhistory}
 
 \clearpage
@@ -750,7 +750,10 @@ register files for the purpose of optimizing the eventual RTL.
 
 Register classes are defined by two parameters: the register class name and the registers that exist within the register class.  The registers 
 defined in the register class are references to register defined in the register node section (See Section~\ref{sec:RegisterNodes}).   The 
-register naming convention must match that of the defined registers.  We provide a sample register class 
+register naming convention must match that of the defined registers.  Register classes may also define the number of read ports 
+and write ports for the associated register block.  These are optional values that default to two (2) read ports and (1) write ports when not specified.  
+Note that when the respective register class contains at least a single register defined to be writable, then the associated register class must include at 
+least one write port.  All register classes must include at least one read port.  We provide a sample register class 
 IR block in Listing~\ref{lis:regclassnode}. 
 
 \vspace{0.125in}
@@ -762,6 +765,8 @@ RegClasses:
       - @String@
       - @String@
   - RegisterClassName: @String@
+    ReadPorts: @Unsigned Integer@
+    WritePorts: @Unsigned Integer@
     Registers:
       - @String@
       - @String@
