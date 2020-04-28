@@ -106,7 +106,7 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & December 30, 2019 \\ % Date the experiment was performed
+Date: & April 28, 2020 \\ % Date the experiment was performed
 Revision: & 1.4.5 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
@@ -147,7 +147,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
-  \vhEntry{1.4.5}{12.30.2019}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes}
+  \vhEntry{1.4.5}{04.28.2020}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes; Adding DataPath nodes}
 \end{versionhistory}
 
 \clearpage
@@ -309,7 +309,7 @@ InstFormats:
         EndBit: 31
         MandatoryField: false
         RegClass: @TEST46.csrregclass@
-\end{lstlisting}  
+\end{lstlisting}
 
 The CoreGen IR unique IR node types to represent each individual style of hardware module.  
 We briefly list the distinct node types as follows (each of with its own set of unique parameters): 
@@ -329,6 +329,7 @@ We briefly list the distinct node types as follows (each of with its own set of 
 \item \textbf{Scratchpad}: Scratchpad nodes are utilized to represent special cases of embedded memories that are contained within an SoC.  
 \item \textbf{Memory Controller}: Memory controller nodes are utilized to represent controller modules that connect to external memories.
 \item \textbf{Virtual to Physical Translation Unit}: Virtual to physical translation nodes are utilized to represent the virtual to physical translation mechanisms present within an SoC.
+\item \textbf{DataPath}: Data path nodes define data paths within a core's pipeline.
 \item \textbf{Extension}: Extensions are special node types in CoreGen.  Extensions have the ability to extend existing modules or module hierarchies that are considered to be self contained.  These nodes are utilized to extend existing designs in a modular fashion within breaking the internal dependencies present in already proven designs.
 \item \textbf{Plugin}: Plugin nodes are special node types in CoreGen.  Plugins can be utilized to represent modules that do not follow the predefined node types already defined in CoreGen.  Plugins can have arbitrary set of parameters that are defined by the plugin architecture.  These parameters can be utilized to steer custom code generation mechanisms for HDL and other artifacts.  Plugins can also be utilized to override any existing CoreGen node in a templated fashion.  
 \end{itemize}
@@ -1171,7 +1172,7 @@ performance of the core will be very poor.
 
 In addition to the aforementioned base nodes, cores can be augmented with one or more extensions.  These extensions 
 may include additional, registers, register classes or other non-standard nodes beyond what is defined in the base 
-core infrastructure.
+core infrastructure.  Further, the cores may define the style of data path utilized to implement the respective ISA.
 
 Core nodes may also define the degree of symmetric multithreading (SMT) by specifying the number of \texttt{ThreadUnits}.  
 This optional keyword permits users to specify the number of unique thread units for the respective core.  The hardware 
@@ -1189,6 +1190,7 @@ We see an example of a basic and extended core node in Listing~\ref{lis:core}.
 - Core: @String@
     Cache: @String@
     ISA: @String@
+    Datapath: @String@
     ThreadUnits: @2@
     RegisterClasses:
       - RegClass: @String@
@@ -1202,6 +1204,26 @@ We see an example of a basic and extended core node in Listing~\ref{lis:core}.
     Extensions:
       - Extension: @String@
 \end{lstlisting}
+
+\clearpage
+\subsection{Data Paths}
+\label{sec:DataPathNodes}
+
+CoreGen DataPath nodes define the structure of the data path within a core node's 
+ISA implementation.  This is effectively the pipeline model for the respective core.  The data path 
+may have one or more pipelines defined which requires a name and an associated style.  Currently, 
+we only support \textit{In-Order} pipeline styles.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Data Path Node Definition},captionpos=b,label={lis:datapath}]
+DataPaths:
+  - Pipeline: @String@
+    Style: @String@
+  - Pipeline: @String@
+    Style: @String@
+\end{lstlisting}
+
+
 
 \clearpage
 \subsection{SoCs}
