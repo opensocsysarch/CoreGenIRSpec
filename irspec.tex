@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4.4}}
+\chead{\textbf{CoreGen IR Spec v.1.4.5}}
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4.4}}
+\cfoot{\textbf{CoreGen IR Spec v.1.4.5}}
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & August 27, 2019 \\ % Date the experiment was performed
-Revision: & 1.4.4 \\         % revision number
+Date: & April 28, 2020 \\ % Date the experiment was performed
+Revision: & 1.4.5 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -147,6 +147,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
+  \vhEntry{1.4.5}{04.28.2020}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes; Adding DataPath nodes; Adding RegIsDestination keyword to instruction formats}
 \end{versionhistory}
 
 \clearpage
@@ -308,7 +309,7 @@ InstFormats:
         EndBit: 31
         MandatoryField: false
         RegClass: @TEST46.csrregclass@
-\end{lstlisting}  
+\end{lstlisting}
 
 The CoreGen IR unique IR node types to represent each individual style of hardware module.  
 We briefly list the distinct node types as follows (each of with its own set of unique parameters): 
@@ -328,6 +329,7 @@ We briefly list the distinct node types as follows (each of with its own set of 
 \item \textbf{Scratchpad}: Scratchpad nodes are utilized to represent special cases of embedded memories that are contained within an SoC.  
 \item \textbf{Memory Controller}: Memory controller nodes are utilized to represent controller modules that connect to external memories.
 \item \textbf{Virtual to Physical Translation Unit}: Virtual to physical translation nodes are utilized to represent the virtual to physical translation mechanisms present within an SoC.
+\item \textbf{DataPath}: Data path nodes define data paths within a core's pipeline.
 \item \textbf{Extension}: Extensions are special node types in CoreGen.  Extensions have the ability to extend existing modules or module hierarchies that are considered to be self contained.  These nodes are utilized to extend existing designs in a modular fashion within breaking the internal dependencies present in already proven designs.
 \item \textbf{Plugin}: Plugin nodes are special node types in CoreGen.  Plugins can be utilized to represent modules that do not follow the predefined node types already defined in CoreGen.  Plugins can have arbitrary set of parameters that are defined by the plugin architecture.  These parameters can be utilized to steer custom code generation mechanisms for HDL and other artifacts.  Plugins can also be utilized to override any existing CoreGen node in a templated fashion.  
 \end{itemize}
@@ -749,7 +751,10 @@ register files for the purpose of optimizing the eventual RTL.
 
 Register classes are defined by two parameters: the register class name and the registers that exist within the register class.  The registers 
 defined in the register class are references to register defined in the register node section (See Section~\ref{sec:RegisterNodes}).   The 
-register naming convention must match that of the defined registers.  We provide a sample register class 
+register naming convention must match that of the defined registers.  Register classes may also define the number of read ports 
+and write ports for the associated register block.  These are optional values that default to two (2) read ports and (1) write ports when not specified.  
+Note that when the respective register class contains at least a single register defined to be writable, then the associated register class must include at 
+least one write port.  All register classes must include at least one read port.  We provide a sample register class 
 IR block in Listing~\ref{lis:regclassnode}. 
 
 \vspace{0.125in}
@@ -761,6 +766,8 @@ RegClasses:
       - @String@
       - @String@
   - RegisterClassName: @String@
+    ReadPorts: @Unsigned Integer@
+    WritePorts: @Unsigned Integer@
     Registers:
       - @String@
       - @String@
@@ -834,6 +841,8 @@ your instruction format has the last field defined to end on bit 31 (\texttt{End
 \hline
 \texttt{MandatoryField} & Determines whether the field \textbf{must} be defined by the implementing instruction. (Bool)\\
 \hline
+\texttt{RegIsDestination} & Determines if the register field is a target register. (Bool)\\
+\hline
 \multirow{2}{*}{\texttt{RegClass}} & Sets the target register class parameter for \texttt{CGInstReg} fields.  (String)\\ & \\
 \hline
 \end{tabular}
@@ -862,6 +871,7 @@ InstFormats:
         EndBit: @Integer@
         MandatoryField: @Bool@
         RegClass: @String@
+        RegIsDestination: @Bool@
       - FieldName: @String@
         FieldType: @{CGInstReg, CGInstCode, CGInstImm}@
         FieldWidth: @Integer@
@@ -995,7 +1005,9 @@ Cache nodes represent a single level of a traditional cache hierarchy.  Regardle
 designated as an instruction cache, data cache or otherwise, the cache node is defined in the same manner.  
 The target use is determined by how the cache is connected to the core (or cores).  Cache nodes are required 
 to have at least two parameters: \texttt{Sets} and \texttt{Ways}.  These represent the number of cache sets 
-and the number of \textit{ways} are represented in the cache.
+and the number of \textit{ways} are represented in the cache.  By default, caches are defined to utilize a 
+standard, 64-byte cache line size.  Users may override this by specifying an optional parameter, \texttt{LineSize} 
+with the size of each cache line in bytes.
 
 Caches can also be configured in hierarchies.  Each level in the cache must be defined as a cache node.  To define 
 a cache hierarchy, start with the cache layer closest to the core (usually defined as the \textit{L1} layer) and add a 
@@ -1017,6 +1029,7 @@ Caches:
   - Cache: @String@
     Sets: @Integer@
     Ways: @Integer@
+    LineSize: @Integer@
 \end{lstlisting}
 
 \clearpage
@@ -1077,7 +1090,15 @@ Memory controller nodes are designed to receive physical addresses from upstream
 subsequently transfer the requests to the external memory devices.  Many designs may warrant overriding these nodes 
 with external RTL IP given design-specific external memory requirements.  Otherwise, memory controller nodes require 
 a unique node name as well as the number of upstream memory ports.  Currently, the number of ports (\texttt{Ports}) should be an even 
-number as these are divided evenly between request ports and response ports.  An example memory controller IR block is 
+number as these are divided evenly between request ports and response ports.  In addition to the number of ports, 
+memory controllers may optionally specify the memory ordering for the respective controller.  The \texttt{MemoryOrder} 
+parameter takes a string argument in one of the following types: \texttt{Weak}, \texttt{TSO} or \texttt{Strong}.  
+The \texttt{Weak} parameter (which is also the default if not specified) instructs the memory controller 
+to function in pure weak ordering for loads and stores.  The \texttt{TSO} parameter instructs the memory 
+controller to function in \textit{total-store-ordering} mode.  Finally, the \texttt{Strong} parameter 
+enforces \textit{strong} memory ordering.
+
+An example memory controller IR block is 
 shown in Listing~\ref{lis:mctrl}.  
 
 \vspace{0.125in}
@@ -1087,6 +1108,7 @@ MemoryControllers:
     Ports: @Integer@
   - MemoryController: @String@
     Ports: @Integer@
+    MemoryOrder: @{Weak,TSO,Strong}@
 \end{lstlisting}
 
 \clearpage
@@ -1105,7 +1127,7 @@ node in Listing~\ref{lis:comm}.
 
 \begin{table}[h]
 \begin{center}
-\caption{CoreGen Instruction Format Node Parameters}
+\caption{CoreGen Comm Node Parameters}
 \vspace{0.125in}
 \label{tab:CommParams}
 \begin{tabular}{|c|l|}
@@ -1153,7 +1175,7 @@ performance of the core will be very poor.
 
 In addition to the aforementioned base nodes, cores can be augmented with one or more extensions.  These extensions 
 may include additional, registers, register classes or other non-standard nodes beyond what is defined in the base 
-core infrastructure.
+core infrastructure.  Further, the cores may define the style of data path utilized to implement the respective ISA.
 
 Core nodes may also define the degree of symmetric multithreading (SMT) by specifying the number of \texttt{ThreadUnits}.  
 This optional keyword permits users to specify the number of unique thread units for the respective core.  The hardware 
@@ -1171,6 +1193,7 @@ We see an example of a basic and extended core node in Listing~\ref{lis:core}.
 - Core: @String@
     Cache: @String@
     ISA: @String@
+    Datapath: @String@
     ThreadUnits: @2@
     RegisterClasses:
       - RegClass: @String@
@@ -1184,6 +1207,26 @@ We see an example of a basic and extended core node in Listing~\ref{lis:core}.
     Extensions:
       - Extension: @String@
 \end{lstlisting}
+
+\clearpage
+\subsection{Data Paths}
+\label{sec:DataPathNodes}
+
+CoreGen DataPath nodes define the structure of the data path within a core node's 
+ISA implementation.  This is effectively the pipeline model for the respective core.  The data path 
+may have one or more pipelines defined which requires a name and an associated style.  Currently, 
+we only support \textit{In-Order} pipeline styles.
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={Data Path Node Definition},captionpos=b,label={lis:datapath}]
+DataPaths:
+  - Pipeline: @String@
+    Style: @String@
+  - Pipeline: @String@
+    Style: @String@
+\end{lstlisting}
+
+
 
 \clearpage
 \subsection{SoCs}
