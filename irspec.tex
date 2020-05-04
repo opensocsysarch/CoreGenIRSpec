@@ -147,7 +147,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.2}{07.03.2019}{JLeidel}{Adding Override keyword to all candidate hardware nodes: Section 2.3}
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
-  \vhEntry{1.4.5}{04.28.2020}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes; Adding DataPath nodes}
+  \vhEntry{1.4.5}{04.28.2020}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes; Adding DataPath nodes; Adding RegIsDestination keyword to instruction formats}
 \end{versionhistory}
 
 \clearpage
@@ -841,6 +841,8 @@ your instruction format has the last field defined to end on bit 31 (\texttt{End
 \hline
 \texttt{MandatoryField} & Determines whether the field \textbf{must} be defined by the implementing instruction. (Bool)\\
 \hline
+\texttt{RegIsDestination} & Determines if the register field is a target register. (Bool)\\
+\hline
 \multirow{2}{*}{\texttt{RegClass}} & Sets the target register class parameter for \texttt{CGInstReg} fields.  (String)\\ & \\
 \hline
 \end{tabular}
@@ -869,6 +871,7 @@ InstFormats:
         EndBit: @Integer@
         MandatoryField: @Bool@
         RegClass: @String@
+        RegIsDestination: @Bool@
       - FieldName: @String@
         FieldType: @{CGInstReg, CGInstCode, CGInstImm}@
         FieldWidth: @Integer@
