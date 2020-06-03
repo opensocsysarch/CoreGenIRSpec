@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4.5}}
+\chead{\textbf{CoreGen IR Spec v.1.4.6}}
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4.5}}
+\cfoot{\textbf{CoreGen IR Spec v.1.4.6}}
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & April 28, 2020 \\ % Date the experiment was performed
-Revision: & 1.4.5 \\         % revision number
+Date: & June 03, 2020 \\ % Date the experiment was performed
+Revision: & 1.4.6 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -148,6 +148,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.3}{08.21.2019}{JLeidel}{Adding syntax mnemonics to pseudo instructions}
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
   \vhEntry{1.4.5}{04.28.2020}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes; Adding DataPath nodes; Adding RegIsDestination keyword to instruction formats}
+  \vhEntry{1.4.6}{06.03.2020}{JLeidel}{Adding scheduler parameters to core nodes}
 \end{versionhistory}
 
 \clearpage
@@ -172,18 +173,18 @@ rather than days.
 between individual hardware modules and their constituent submodules.  These dependencies are preserved 
 in a manner similar to traditional compiler technology, e.g. a \textit{directed acyclic graph} (DAG).  These 
 dependencies are subsequently utilized to analyze certain inherent properties of the DAG in order to 
-verify, optimized and document the design.  
+verify, optimized and document the design.
 
 \item \textbf{Support Modular Design Principles/Reuse}: One of the principle issues that plague previous 
 design workflows and paradigms is the lack of potential reuse.  The CoreGen IR provides modular reuse 
 of individual design elements as well as the ability to use design templates to rapidly build similar, but 
 specialized design elements.  Further, all individual hardware modules can be overridden using external 
-design elements in order to further construct specialized designs.  
+design elements in order to further construct specialized designs.
 
 \item \textbf{Support High-Level Design Verification}: One of the primary goals of the CoreGen infrastructure 
 is the ability to perform high performance, low latency design verification without the need to perform low-level 
 synthesis and simulation.  This capability is provided by the inherent ability to express complex designs 
-within the CoreGen IR.  
+within the CoreGen IR.
 
 \item \textbf{Support Multiple Artifact Generation}: The final goal of the CoreGen IR is to drive secondary 
 and, potentially, external tooling.  These tools provide the ability to generate multiple levels of hardware 
@@ -1177,15 +1178,43 @@ In addition to the aforementioned base nodes, cores can be augmented with one or
 may include additional, registers, register classes or other non-standard nodes beyond what is defined in the base 
 core infrastructure.  Further, the cores may define the style of data path utilized to implement the respective ISA.
 
-Core nodes may also define the degree of symmetric multithreading (SMT) by specifying the number of \texttt{ThreadUnits}.  
-This optional keyword permits users to specify the number of unique thread units for the respective core.  The hardware 
+Core nodes may also define the degree of symmetric multithreading (SMT) by specifying the number of \texttt{ThreadUnits}
+and the \texttt{Scheduler} type.
+The \texttt{ThreadUnits} optional keyword permits users to specify the number of unique thread units for the respective core.  The hardware 
 code generator will output unique register files for each thread unit unless a register has been designated as 
 \textit{thread unit shared} (\texttt{TUSReg}) or \texttt{Shared}.  See Section~\ref{sec:RegisterNodes} for descriptions 
-of these register attributes.    
+of these register attributes.
 The code generator will not, however, output unique \texttt{Extensions} for each thread unit.  
 A single instance of a shared register will be generated and shared across the cores.  If not specified, the number of 
-\texttt{ThreadUnits} is assumed to be \textit{1}.  
+\texttt{ThreadUnits} is assumed to be \textit{1}.
 
+The \texttt{Scheduler} parameter defines the style of SMT scheduling between thread units.  We describe 
+each support scheduler type in Table~\ref{tab:SchedType}.  Note that if the number of \texttt{ThreadUnits} is 
+greater than zero, then the user must also define a \texttt{Scheduler} type.  However, if a \texttt{Scheduler} 
+type is defined (that is not \texttt{Unknown}), then the user must specify that the core has more than one thread unit.
+
+\begin{table}[h]
+\begin{center}
+\caption{CoreGen Core Scheduler Types}
+\vspace{0.125in}
+\label{tab:SchedTypes}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Scheduler Type} & \textbf{Description}\\
+\hline
+\texttt{Unknown} & Undefined scheduling type (default).\\
+\hline
+\texttt{PCycle} & The core switches between threads every \textit{P}-cycles\\
+\hline
+\texttt{Pressure} & The core switches between threads based upon thread pressure\\
+\hline
+\texttt{Programmatic} & The core switches between threads using a programmatic method\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\clearpage
 We see an example of a basic and extended core node in Listing~\ref{lis:core}.   
 
 \vspace{0.125in}
@@ -1195,6 +1224,7 @@ We see an example of a basic and extended core node in Listing~\ref{lis:core}.
     ISA: @String@
     Datapath: @String@
     ThreadUnits: @2@
+    Scheduler: @PCycle@
     RegisterClasses:
       - RegClass: @String@
       - RegClass: @String@

@@ -2,7 +2,7 @@ PAPER = irspec
 TEX = $(wildcard *.tex)
 BIB = refs.bib
 FIGS = $(wildcard figures/*.pdf figures/*.png figures/*.jpg ./*.jpg)
-VER = 1.4.5
+VER = 1.4.6
 
 .PHONY: all clean
 
