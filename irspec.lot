@@ -5,5 +5,6 @@
 \contentsline {table}{\numberline {5}{\ignorespaces CoreGen Register Node Parameters}}{17}{table.5}%
 \contentsline {table}{\numberline {6}{\ignorespaces CoreGen Instruction Format Node Parameters}}{21}{table.6}%
 \contentsline {table}{\numberline {7}{\ignorespaces CoreGen Comm Node Parameters}}{30}{table.7}%
-\contentsline {table}{\numberline {8}{\ignorespaces CoreGen Plugin Node Parameters}}{36}{table.8}%
-\contentsline {table}{\numberline {9}{\ignorespaces CoreGen Plugin Node Feature Types}}{37}{table.9}%
+\contentsline {table}{\numberline {8}{\ignorespaces CoreGen Core Scheduler Types}}{31}{table.8}%
+\contentsline {table}{\numberline {9}{\ignorespaces CoreGen Plugin Node Parameters}}{37}{table.9}%
+\contentsline {table}{\numberline {10}{\ignorespaces CoreGen Plugin Node Feature Types}}{38}{table.10}%
