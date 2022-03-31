@@ -75,10 +75,10 @@
 %----------------------------------------------------------------------------------------
 \pagestyle{fancy}
 \lhead{}
-\chead{\textbf{CoreGen IR Spec v.1.4.6}}
+\chead{\textbf{CoreGen IR Spec v.1.5}}
 \rhead{}
 \lfoot{} %-- format: TR YYYY-RRR-V.V; y = year; r = report; v = version
-\cfoot{\textbf{CoreGen IR Spec v.1.4.6}}
+\cfoot{\textbf{CoreGen IR Spec v.1.5}}
 \rfoot{\thepage}      % -- page number
 
 %----------------------------------------------------------------------------------------
@@ -106,8 +106,8 @@
 
 \begin{center}
 \begin{tabular}{l r}
-Date: & June 03, 2020 \\ % Date the experiment was performed
-Revision: & 1.4.6 \\         % revision number
+Date: & March 31, 2022 \\ % Date the experiment was performed
+Revision: & 1.5 \\         % revision number
 Authors: & Tactical Computing Labs\\ % Author names
 & contact@tactcomplabs.com\\
 \end{tabular}
@@ -149,6 +149,7 @@ Authors: & Tactical Computing Labs\\ % Author names
   \vhEntry{1.4.4}{08.27.2019}{JLeidel}{Adding notes syntax to each candidate IR node}
   \vhEntry{1.4.5}{04.28.2020}{JLeidel}{Adding LineSize cache line size parameter and memory ordering parameters; Adding read and write ports to register classes; Adding DataPath nodes; Adding RegIsDestination keyword to instruction formats}
   \vhEntry{1.4.6}{06.03.2020}{JLeidel}{Adding scheduler parameters to core nodes; Adding virtual to physical controllers to extensions}
+  \vhEntry{1.5}{03.31.2022}{JLeidel}{Adding vector and matrix register syntax; Adding VLIWStage node definitions}
 \end{versionhistory}
 
 \clearpage
@@ -325,6 +326,7 @@ We briefly list the distinct node types as follows (each of with its own set of 
 \item \textbf{Register}: Register nodes are utilized to represent individual hardware registers
 \item \textbf{Instruction Set Architecture}: An instruction set architecture node is utilized to encapsulate multiple instructions and their constituent encodings.
 \item \textbf{Cache}: Cache nodes are utilized to represent an individual layer in a caching hierarchy (for example, an instruction cache or L1 data cache).
+\item \textbf{VLIWStage}: Explicitly wired stages for a VLIW pipeline with explicit input \& output connectivity.
 \item \textbf{Encoding}: Encoding nodes are utilized to contain the encodings for individual fields of various structures (such as instruction formats)
 \item \textbf{Communication Link}: Communication nodes are utilized to represent physical links between individual modules.  
 \item \textbf{Scratchpad}: Scratchpad nodes are utilized to represent special cases of embedded memories that are contained within an SoC.  
@@ -685,6 +687,18 @@ Additional parameters are described in Table~\ref{tab:RegNodeParams}.  We provid
 \multirow{2}{*}{\texttt{Shared}} & Sets a parameter indicating that the register is a shared register.\\
                                                           & The hardware generator will create \textbf{ONE} instance of the register for all cores. (Bool)\\
 \hline
+\multirow{2}{*}{\texttt{Vector}} & Sets \texttt{vector} parameter for the target register.\\
+						& Requires that the user initialize the \texttt{DimX} parameter. (Bool)\\
+\hline
+\multirow{2}{*}{\texttt{Matrix}} & Sets \texttt{vector} parameter for the target register.\\
+						& Requires that the user initialize the \texttt{DimX} and \texttt{DimY} parameters. (Bool)\\
+\hline
+\multirow{2}{*}{\texttt{DimX}} & Sets the number of (\texttt{Width}) elements in the \texttt{X} dimension for a vector or matrix register\\
+						& (Unsigned Int)\\
+\hline
+\multirow{2}{*}{\texttt{DimY}} & Sets the number of (\texttt{Width}) elements in the \texttt{Y} dimension for a matrix register\\
+						& (Unsigned Int)\\
+\hline
 \multirow{2}{*}{\textbf{SubRegs}} & \\ & \\
 \hline
 \multirow{2}{*}{\texttt{SubReg}} & Sets the unique subregister name.\\
@@ -736,6 +750,20 @@ Registers:
     AMSReg: @Bool@
     TUSReg: @Bool@
     Shared: @Bool@
+  - RegName: @String@
+    Width: @Integer@
+    Index: @Integer@
+    PseudoName: @String@
+    IsFixedValue: @Bool@
+    IsSIMD: @Bool@
+    RWReg: @Bool@
+    ROReg: @Bool@
+    CSRReg: @Bool@
+    AMSReg: @Bool@
+    TUSReg: @Bool@
+    Shared: @Bool@
+    Vector: @Bool@
+    DimX: @Integer@
    ...more registers
 \end{lstlisting}  
 
@@ -1032,6 +1060,91 @@ Caches:
     Ways: @Integer@
     LineSize: @Integer@
 \end{lstlisting}
+
+\clearpage
+\subsection{VLIW Stages}
+\label{sec:VLIWStageNodes}
+
+VLIWStage nodes are utilized to represent a single stage in an explicit VLIW pipeline.  This is an \textbf{advanced} 
+feature of the CoreGen infrastructure and IR that allows architects to explicit define the inputs, outputs and 
+connectivity between VLIW-style pipeline stages.  VLIW pipeline stages differ in form from 
+traditional instruction (\texttt{Inst}) blocks in that it requires that the user explicitly outline the set of input and output 
+I/O's between pipeline stages.  Further, the naming convention for VLIW pipeline stages must follow the 
+form : \texttt{NAME\_STAGE}, where \texttt{NAME} is a unique stage name and \texttt{STAGE } is a monotonically 
+increasing integer value.  The CoreGen infrastructure automatically wires the various pipeline stages together 
+in the right order using the monotonically increasing integers.  This also includes the ability to wire multiple, disparate 
+pipeline stages that exist at the same clock cycle.  Examples of utilizing this naming convention is noted as follows:
+
+\begin{verbatim}
+# Example 1: Simple VLIW pipeline
+STAGE_0
+STAGE_1
+STAGE_2
+...
+
+# Example 2: Complex VLIW pipeline
+STAGE_0     # clock 0
+STAGEA_1    # clock 1, pipe A
+STAGEB_1    # clock 1, pipe B
+STAGE_2     # clock 2
+\end{verbatim}
+
+The VLIWStage nodes a require several fields and have several optional fields (Listing~\ref{lis:vliwstage}).  First, 
+the \texttt{VLIWStageName} must be specified in the form mentioned above.  We must also associate the stage 
+with a valid instruction format (\texttt{InstFormat}).  Ideally, the target instruction format is defined as a VLIW format.  
+Next, we specify the set of I/O operations as \texttt{Inputs} and \texttt{Outputs}.  These must be present, but may 
+not have any actual input or output values.  For example, the first stage of the pipeline may not have any inputs 
+and the last stage may not have any outputs.  However, for any stage that has an input, there must be an equivalent 
+output from a previous pipeline stage.  Finally, there is an optional \texttt{Impl} field whereby users can 
+specify the functional body of the stage, much in the same way as the instruction node definition.  
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={VLIWStage Node Definition},captionpos=b,label={lis:vliwstage}]
+VLIWStages:
+  - VLIWStageName: @String@
+    InstFormat: @String@
+    Inputs:
+      - @String@
+    Outputs:
+      - @String@
+    Impl: |
+      @String
+\end{lstlisting}
+
+An example of creating VLIWStage nodes is noted as follows:
+
+\vspace{0.125in}
+\begin{lstlisting}[frame=single,style=base,caption={VLIWStage Node Example},captionpos=b,label={lis:vliwstageex}]
+VLIWStages:
+  - VLIWStageName: STAGE_0
+    InstFormat: SAMPLE.VLIW
+    Inputs:
+      []
+    Outputs:
+      - RS0_VAL
+      - RS1_VAL
+    Impl: |
+      u64 RS0_VAL = LOADELEM(RS0, 64)
+      u64 RS1_VAL = LOADELEM(RS0, 64)
+  - VLIWStageName: STAGE_1
+    InstFormat: SAMPLE.VLIW
+    Inputs:
+      - RS0_VAL
+      - RS1_VAL
+    Outputs:
+      - RD_VAL
+    Impl: |
+      u64 RD_VAL = RS0_VAL + RS1_VAL
+  - VLIWStageName: STAGE_2
+    InstFormat: SAMPLE.VLIW
+    Inputs:
+      - RD_VAL
+    Outputs:
+      []
+    Impl: |
+      STOREELEM(RD_VAL, RD, 64)
+\end{lstlisting}
+
 
 \clearpage
 \subsection{Scratchpad Memories}
